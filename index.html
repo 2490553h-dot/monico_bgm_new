@@ -322,19 +322,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
 
     <script>
-      // -----------------------------------------------------
-      // ★ GitHubリポジトリのURL設定ベース ★
-      // -----------------------------------------------------
       const GITHUB_BGM_BASE_URL = "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgms/";
 
-      // ★ bgmsフォルダに保存されているファイル名の配列 ★
       const bgmFiles = [
           "bgm-slow.mp3",
           "bgm-middle.mp3",
           "bgm-fast.mp3"
       ];
 
-      // 起動アニメーション
       window.onload = () => {
          const loader = document.getElementById("loading-screen");
          if(loader) {
@@ -343,7 +338,6 @@
          }
       };
 
-      // UI関連
       const gaugeFill = document.getElementById('gaugeFill');
       const scoreValue = document.getElementById('scoreValue');
       const videoWrapper = document.getElementById('videoWrapper');
@@ -399,6 +393,7 @@
       const LOCAL_LOOP_MS = 100; 
 
       let isCalibrating = false;
+      let hasFaceDetectedInCalibration = false; // ★追加：学習開始時に顔を捉えられたかフラグ
       const CALIBRATION_DURATION_MS = 15000; 
       let calibrationStartTime = 0;
       let calibrationData = { ear: [], pitch: [], yaw: [] };
@@ -419,7 +414,6 @@
       const Z_THRESHOLD_PITCH = 2.5; 
       const Z_THRESHOLD_EAR = 1.5;   
 
-      // イベントリスナーの登録
       cameraButton.addEventListener("click", prepareSystem); 
       startButton.addEventListener("click", startMonitoring); 
       stopButton.addEventListener("click", stopMonitoring); 
@@ -427,7 +421,6 @@
       previewButton.addEventListener("click", playPreview);
       stopPreviewButton.addEventListener("click", stopPreview);
 
-      // 手動テストボタン
       testButton.addEventListener("click", () => {
           if (isBgmPlaying) {
               stopAlertBGM();
@@ -447,11 +440,9 @@
           }
       });
 
-      // 初期化処理
       loadDevices();
       initBgmOptions();
 
-      // BGMセレクトボックスの初期化
       function initBgmOptions() {
           bgmSelect.innerHTML = "";
           bgmFiles.forEach(fileName => {
@@ -462,7 +453,6 @@
           });
       }
 
-      // 選択した曲の単体試聴
       function playPreview() {
           stopPreview(); 
           stopAlertBGM(); 
@@ -489,7 +479,6 @@
           }
       }
 
-      // ★コア修正：集中低下時に「bgmFiles」からランダムに自動選曲して再生する処理★
       function playAlertBGM() {
           if (isBgmPlaying) return; 
           stopPreview(); 
@@ -499,7 +488,6 @@
               return;
           }
 
-          // 配列からランダムに1つのファイル名を選び出す
           const randomIndex = Math.floor(Math.random() * bgmFiles.length);
           const chosenFile = bgmFiles[randomIndex];
           const url = GITHUB_BGM_BASE_URL + chosenFile;
@@ -514,7 +502,6 @@
               status.textContent = "⚠️ BGM再生エラーが発生しました。";
           });
 
-          // 画面に再生中の具体的な曲名を表示
           status.textContent = `🎵 警告BGMをランダム再生中: ${chosenFile}`;
 
           bgmTimeoutId = setTimeout(() => {
@@ -619,9 +606,10 @@
               return;
           }
 
-          status.textContent = "学習開始: 15秒間あなたの姿勢を学習します。普段通り作業してください。";
+          status.textContent = "学習の準備をしています。カメラを真っ直ぐ見てください...";
 
           isCalibrating = true;
+          hasFaceDetectedInCalibration = false; // 初期化
           calibrationStartTime = Date.now();
           calibrationData = { ear: [], pitch: [], yaw: [] }; 
           lapseScore = 0;
@@ -691,23 +679,44 @@
                   lastPitch = pitch; lastYaw = yaw; lastSeenTime = now;
 
                   if (isCalibrating) {
+                      // 最初の一瞬だけ顔が見つかったら、そこから15秒間の本当の計測カウントダウンを開始する
+                      if (!hasFaceDetectedInCalibration) {
+                          hasFaceDetectedInCalibration = true;
+                          calibrationStartTime = Date.now(); // タイマーをリセットしてここから15秒測る
+                      }
+
                       calibrationData.ear.push(avgEAR);
                       calibrationData.pitch.push(pitch);
                       calibrationData.yaw.push(yaw);
                       
                       const elapsed = now - calibrationStartTime;
                       const remaining = Math.ceil((CALIBRATION_DURATION_MS - elapsed) / 1000);
-                      status.textContent = `キャリブレーション中... (残り${remaining}秒)`;
+                      status.textContent = `姿勢を学習中... 普段通り作業してください (残り${Math.max(remaining, 0)}秒)`;
                       
                       if (elapsed > CALIBRATION_DURATION_MS) finishCalibration();
                   } else {
                       checkConcentration(pitch, yaw, avgEAR, isPhoneDetected);
                   }
               } else {
-                  if (!isCalibrating && isPhoneDetected) {
-                       checkConcentration(0, 0, 0.3, true);
+                  if (isCalibrating) {
+                      // まだ一度も顔が検知できていない、かつ開始から5秒以上経ってしまった場合のみ警告
+                      const elapsedSinceStart = now - calibrationStartTime;
+                      if (!hasFaceDetectedInCalibration) {
+                          if (elapsedSinceStart > 5000) {
+                              status.textContent = "⚠️ 学習を開始できません。カメラの正面に顔を合わせてください。";
+                          } else {
+                              status.textContent = "カメラの映像を同期中... 顔を映したままお待ちください。";
+                          }
+                      } else {
+                          // 計測中に顔が見失われた場合
+                          status.textContent = "⚠️ 学習中に顔が見失われました。正面を向いてください。";
+                      }
                   } else {
-                      handleFaceLost(now);
+                      if (isPhoneDetected) {
+                           checkConcentration(0, 0, 0.3, true);
+                      } else {
+                          handleFaceLost(now);
+                      }
                   }
               }
           } catch (e) { console.error("Loop Error:", e); }
@@ -716,7 +725,7 @@
       function finishCalibration() {
           if (calibrationData.ear.length < 10) { 
               baseline = { earMean: 0.3, earStd: 0.05, pitchMean: 0, pitchStd: 10, yawMean: 0, yawStd: 10 };
-              status.textContent = "学習完了 (データ不足のため標準値)";
+              status.textContent = "学習完了 (データ不足のため標準値で起動します)";
           } else {
               baseline.earMean = calculateStats(calibrationData.ear).mean;
               baseline.earStd  = calculateStats(calibrationData.ear).std;
@@ -729,7 +738,7 @@
           }
           
           isCalibrating = false; 
-          status.textContent = "モニタリングをスタートしました。";
+          status.textContent = "モニタリングを開始しました！正常稼働中です。";
       }
 
       function checkConcentration(pitch, yaw, avgEAR, isPhoneDetected) {
@@ -789,7 +798,6 @@
                   const reasonText = reasons.length > 0 ? reasons.join("、") : "集中力の低下";
                   status.textContent = `⚠️ 集中低下検知 (${reasonText}): BGMをランダムに15秒間再生します。`;
                   
-                  // ランダム再生を起動
                   playAlertBGM();
                   
                   lapseScore = 0; 
