@@ -4,7 +4,7 @@
     <base target="_top">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>moni:co - BGM Alert Ed.</title>
+    <title>moni:co - Random BGM Ed.</title>
     <style>
       :root {
         --primary-color: #2563eb; 
@@ -30,7 +30,6 @@
         flex-direction: column;
       }
 
-      /* 初回ロード時のカバー画面 */
       #loading-screen {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
@@ -198,7 +197,6 @@
       }
       button:active { transform: scale(0.98); }
 
-      /* 試聴ボタン用のカスタムスタイル */
       .btn-sm {
         width: auto;
         min-height: 36px;
@@ -257,7 +255,7 @@
 
     <header>
       <h1>moni:co</h1>
-      <span class="badge">BGM Alert Ed.</span>
+      <span class="badge">Random BGM Ed.</span>
     </header>
 
     <main>
@@ -286,20 +284,11 @@
             <select id="videoSource"></select>
           </div>
 
-          <div class="input-group">
-            <label for="bgmCategory">BGMの速度 (Tempo)</label>
-            <select id="bgmCategory">
-              <option value="slow">遅い</option>
-              <option value="normal" selected>普通</option>
-              <option value="fast">速い</option>
-            </select>
-          </div>
-          
-          <div class="input-group">
-            <label for="bgmSelect">曲の選択 (Select Track)</label>
+          <div class="input-group full-width">
+            <label for="bgmSelect">登録されているBGM（ここからランダムに流れます）</label>
             <select id="bgmSelect"></select>
             <div style="display: flex;">
-              <button id="previewButton" class="btn-sm">▶ 試聴</button>
+              <button id="previewButton" class="btn-sm">▶ 選択中の曲を試聴</button>
               <button id="stopPreviewButton" class="btn-sm">■ 停止</button>
             </div>
           </div>
@@ -307,7 +296,7 @@
           <div class="input-group full-width">
             <label for="toleranceInput">猶予時間 (Seconds to Trigger)</label>
             <input type="number" id="toleranceInput" value="10" min="5">
-            <span style="font-size:0.7rem; color:#9ca3af; display:block; margin-top:4px;">※この秒数以上、低下スコアが50%を超えると、選択したBGMが15秒間流れます</span>
+            <span style="font-size:0.7rem; color:#9ca3af; display:block; margin-top:4px;">※この秒数以上、低下スコアが50%を超えると、登録曲からランダムに15秒間流れます</span>
           </div>
 
         </div>
@@ -316,13 +305,13 @@
           <button id="cameraButton">📸 カメラ起動・準備 (Check Camera)</button>           
           <button id="startButton" style="display: none;">🔴 モニタリング開始 (Start)</button>           
           <button id="stopButton" style="display: none;">⬛ モニタリング停止 (Stop)</button>
-          <button id="testButton">🎵 BGM再生テスト (Manual Test)</button>
+          <button id="testButton">🎵 ランダム再生テスト (Manual Test)</button>
         </div>
 
       </div>
 
       <div class="status-box" id="status">
-        Ready. カメラとBGMを選択してStartを押してください。
+        Ready. カメラを準備してStartを押してください。集中低下時にランダムでBGMが流れます。
       </div>
 
     </main>
@@ -334,19 +323,21 @@
 
     <script>
       // -----------------------------------------------------
-      // ★ BGM リストの設定箇所 (GitHub Raw URLを適用済み) ★
+      // ★書き換え箇所①: GitHubのURLのベースを設定してください★
       // -----------------------------------------------------
-      const bgmList = {
-          slow: [
-              { title: "遅い曲 (bgm-slow)", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm-slow.mp3" }
-          ],
-          normal: [
-              { title: "普通の曲 (bgm-middle)", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm-middle.mp3" }
-          ],
-          fast: [
-              { title: "速い曲 (bgm-fast)", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm-fast.mp3" }
-          ]
-      };
+      // 末尾の /bgms/ の部分が、GitHubで作ったフォルダ名に対応します。
+      // 「2490553h-dot」の部分をご自身のユーザー名に書き換えてください。
+      const GITHUB_BGM_BASE_URL = "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgms/";
+
+      // -----------------------------------------------------
+      // ★書き換え箇所②: アップロードした音楽のファイル名を入れてください★
+      // -----------------------------------------------------
+      // 新しい曲をGitHubのbgmsフォルダに増やしたら、ここにもファイル名を追記します。
+      const bgmFiles = [
+          "bgm-slow.mp3",
+          "bgm-middle.mp3",
+          "bgm-fast.mp3"
+      ];
 
       // 起動アニメーション
       window.onload = () => {
@@ -357,9 +348,7 @@
          }
       };
 
-      // -----------------------------------------------------
       // UI関連
-      // -----------------------------------------------------
       const gaugeFill = document.getElementById('gaugeFill');
       const scoreValue = document.getElementById('scoreValue');
       const videoWrapper = document.getElementById('videoWrapper');
@@ -386,9 +375,6 @@
           status.classList.remove("status-error"); 
       }
 
-      // -----------------------------------------------------
-      // ロジック
-      // -----------------------------------------------------
       window.onerror = function(msg) { 
           const loader = document.getElementById("loading-screen");
           if(loader) loader.style.display = "none";
@@ -407,13 +393,10 @@
       const videoSource = document.getElementById("videoSource");
       const toleranceInput = document.getElementById("toleranceInput");
 
-      // BGM関連のUI要素
-      const bgmCategory = document.getElementById("bgmCategory");
       const bgmSelect = document.getElementById("bgmSelect");
       const previewButton = document.getElementById("previewButton");
       const stopPreviewButton = document.getElementById("stopPreviewButton");
 
-      // AIモデル変数
       let detector;       
       let objectDetector; 
       
@@ -432,35 +415,29 @@
       
       let lastPitch=0, lastYaw=0, lastSeenTime=0;
 
-      // BGM制御用の変数
       let alertAudio = null;
       let previewAudio = null;
       let isBgmPlaying = false;
       let bgmTimeoutId = null;
 
-      // 基準の自動追従レート
       const ADAPTATION_RATE = 0.001; 
-
       const Z_THRESHOLD_PITCH = 2.5; 
       const Z_THRESHOLD_EAR = 1.5;   
 
-      // イベントリスナーの登録
       cameraButton.addEventListener("click", prepareSystem); 
       startButton.addEventListener("click", startMonitoring); 
       stopButton.addEventListener("click", stopMonitoring); 
       
-      // BGM選択切り替えイベント
-      bgmCategory.addEventListener("change", updateBgmOptions);
       previewButton.addEventListener("click", playPreview);
       stopPreviewButton.addEventListener("click", stopPreview);
 
-      // 手動テストボタン
+      // 手動テストボタン（テスト時もランダム再生されるように変更）
       testButton.addEventListener("click", () => {
           if (isBgmPlaying) {
               stopAlertBGM();
-              status.textContent = "手動テスト: BGMを停止しました。";
+              status.textContent = "テスト: BGMを停止しました。";
           } else {
-              status.textContent = "手動テスト: BGMを15秒間再生します。";
+              status.textContent = "テスト: ランダムにBGMを再生します。";
               playAlertBGM();
           }
       });
@@ -474,32 +451,28 @@
           }
       });
 
-      // 初期化処理
       loadDevices();
-      updateBgmOptions();
+      initBgmOptions();
 
-      // BGMセレクトボックスの動的更新
-      function updateBgmOptions() {
-          const category = bgmCategory.value;
+      // BGMセレクトボックスの初期化（登録されている一覧を表示）
+      function initBgmOptions() {
           bgmSelect.innerHTML = "";
-          if (bgmList[category]) {
-              bgmList[category].forEach(bgm => {
-                  const option = document.createElement("option");
-                  option.value = bgm.url;
-                  option.textContent = bgm.title;
-                  bgmSelect.appendChild(option);
-              });
-          }
+          bgmFiles.forEach(fileName => {
+              const option = document.createElement("option");
+              option.value = GITHUB_BGM_BASE_URL + fileName;
+              option.textContent = fileName;
+              bgmSelect.appendChild(option);
+          });
       }
 
-      // 作業前試聴の再生
+      // 選択した曲の試聴
       function playPreview() {
           stopPreview(); 
           stopAlertBGM(); 
           
           const url = bgmSelect.value;
           if (!url) {
-              alert("BGMのURLが設定されていません。");
+              alert("BGMが選択されていないか、リストが空です。");
               return;
           }
           
@@ -507,10 +480,9 @@
           previewAudio.play().catch(err => {
               alert("試聴再生エラー: 音源が読み込めませんでした。GitHubへの反映完了を待つか、URLを確認してください。 " + err.message);
           });
-          status.textContent = "♪ 選択したBGMを試聴中...";
+          status.textContent = `♪ 選択したBGMを試聴中... (${bgmSelect.options[bgmSelect.selectedIndex].text})`;
       }
 
-      // 作業前試聴の停止
       function stopPreview() {
           if (previewAudio) {
               previewAudio.pause();
@@ -520,17 +492,20 @@
           }
       }
 
-      // 集中低下時のBGM再生処理 (15秒間)
+      // ★【コア修正】集中低下時のランダム再生処理 (15秒間) ★
       function playAlertBGM() {
           if (isBgmPlaying) return; 
-          
           stopPreview(); 
 
-          const url = bgmSelect.value;
-          if (!url) {
-              status.textContent = "⚠️ BGMのURLが無効なため再生できません。";
+          if (bgmFiles.length === 0) {
+              status.textContent = "⚠️ BGMファイルが登録されていません。";
               return;
           }
+
+          // 配列からランダムに1つのファイル名を選び出す
+          const randomIndex = Math.floor(Math.random() * bgmFiles.length);
+          const chosenFile = bgmFiles[randomIndex];
+          const url = GITHUB_BGM_BASE_URL + chosenFile;
 
           isBgmPlaying = true;
           alertAudio = new Audio(url);
@@ -539,15 +514,16 @@
           alertAudio.play().catch(err => {
               console.error("BGM再生エラー:", err);
               isBgmPlaying = false;
+              status.textContent = "⚠️ BGM再生エラーが発生しました。";
           });
 
-          // 15秒後に自動停止するタイマー
+          status.textContent = `🎵 警告BGMをランダム再生中: ${chosenFile}`;
+
           bgmTimeoutId = setTimeout(() => {
               stopAlertBGM();
           }, 15000);
       }
 
-      // BGMの停止処理
       function stopAlertBGM() {
           if (alertAudio) {
               alertAudio.pause();
@@ -604,7 +580,7 @@
               status.textContent = "スマホ検知AIをロード中...";
               objectDetector = await cocoSsd.load();
 
-              status.textContent = "準備完了！好みのBGMを選択・試聴し、「モニタリング開始」を押してください。";
+              status.textContent = "準備完了！「モニタリング開始」を押してください。";
               status.classList.remove("pulse");
               
               cameraButton.style.display = 'none';
@@ -805,21 +781,14 @@
 
           const now = Date.now();
 
-          // 集中低下度が50%（LAPSE_THRESHOLD）を超えた場合の処理
           if (lapseScore > LAPSE_THRESHOLD) {
               if (lapseStartTime === null) lapseStartTime = now;
               const duration = now - lapseStartTime;
               const toleranceMs = parseInt(toleranceInput.value) * 1000;
               msg += ` (継続${(duration/1000).toFixed(1)}秒)`;
 
-              // 猶予時間を超え、現在BGMが再生されていない場合
               if (duration > toleranceMs && !isBgmPlaying) {
-                  const reasonText = reasons.length > 0 ? reasons.join("、") : "集中力の低下";
-                  status.textContent = `⚠️ 集中低下検知 (${reasonText}): BGMを15秒間再生します。`;
-                  
-                  // BGMを再生
                   playAlertBGM();
-                  
                   lapseScore = 0; 
                   lapseStartTime = null;
                   return;
