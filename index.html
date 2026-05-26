@@ -323,11 +323,16 @@
 
     <script>
       // -----------------------------------------------------
-      // ★ 正しいリポジトリのURLベース ★
+      // ★書き換え箇所①: GitHubのURLのベースを設定してください★
       // -----------------------------------------------------
+      // 末尾の /bgms/ の部分が、GitHubで作ったフォルダ名に対応します。
+      // 「2490553h-dot」の部分をご自身のユーザー名に書き換えてください。
       const GITHUB_BGM_BASE_URL = "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgms/";
 
-      // ★ あなたが実際にアップロードした音楽のファイル名に書き換えてください ★
+      // -----------------------------------------------------
+      // ★書き換え箇所②: アップロードした音楽のファイル名を入れてください★
+      // -----------------------------------------------------
+      // 新しい曲をGitHubのbgmsフォルダに増やしたら、ここにもファイル名を追記します。
       const bgmFiles = [
           "bgm-slow.mp3",
           "bgm-middle.mp3",
@@ -419,7 +424,6 @@
       const Z_THRESHOLD_PITCH = 2.5; 
       const Z_THRESHOLD_EAR = 1.5;   
 
-      // イベントリスナーの登録
       cameraButton.addEventListener("click", prepareSystem); 
       startButton.addEventListener("click", startMonitoring); 
       stopButton.addEventListener("click", stopMonitoring); 
@@ -427,7 +431,7 @@
       previewButton.addEventListener("click", playPreview);
       stopPreviewButton.addEventListener("click", stopPreview);
 
-      // 手動テストボタン
+      // 手動テストボタン（テスト時もランダム再生されるように変更）
       testButton.addEventListener("click", () => {
           if (isBgmPlaying) {
               stopAlertBGM();
@@ -447,11 +451,10 @@
           }
       });
 
-      // 初期化処理
       loadDevices();
-      initBgmOptions(); // 不要だった「updateBgmOptions」の呼び出しバグを完全に修正しました
+      initBgmOptions();
 
-      // BGMセレクトボックスの初期化
+      // BGMセレクトボックスの初期化（登録されている一覧を表示）
       function initBgmOptions() {
           bgmSelect.innerHTML = "";
           bgmFiles.forEach(fileName => {
@@ -475,7 +478,7 @@
           
           previewAudio = new Audio(url);
           previewAudio.play().catch(err => {
-              alert("試聴再生エラー: 音源が読み込めませんでした。 " + err.message);
+              alert("試聴再生エラー: 音源が読み込めませんでした。GitHubへの反映完了を待つか、URLを確認してください。 " + err.message);
           });
           status.textContent = `♪ 選択したBGMを試聴中... (${bgmSelect.options[bgmSelect.selectedIndex].text})`;
       }
@@ -489,7 +492,7 @@
           }
       }
 
-      // 集中低下時のランダム再生処理 (15秒間)
+      // ★【コア修正】集中低下時のランダム再生処理 (15秒間) ★
       function playAlertBGM() {
           if (isBgmPlaying) return; 
           stopPreview(); 
