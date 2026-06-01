@@ -333,38 +333,39 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
 
     <script>
-　　　 // -----------------------------------------------------
-      // ★ 音楽ファイルリストの設定箇所（フォルダ名変更対応版） ★
+      // -----------------------------------------------------
+      // ★ 正しい楽曲直リンク（Raw URL）を完全に反映 ★
       // -----------------------------------------------------
       const bgmGroups = {
           bgms: [
-              { title: "bgm_fast", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgms/bgm_fast.mp3" },
-              { title: "bgm_middle", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgms/bgm_middle.mp3" },
-              { title: "bgm_slow", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgms/bgm_slow.mp3" }
+              { title: "bgm-fast", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgms/bgm-fast.mp3" },
+              { title: "bgm-middle", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgms/bgm-middle.mp3" },
+              { title: "bgm-slow", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgms/bgm-slow.mp3" }
           ],
           bgm_horror: [
-              { title: "シオンタウン", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_horror/%E3%82%B7%E3%82%AA%E3%83%B3%E3%82%BF%E3%82%A6%E3%83%B3.mp3" },
-              { title: "シャトルラン", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_horror/%E3%82%B7%E3%83%A3%E3%83%88%E3%83%AB%E3%83%A9%E3%83%B3.mp3" },
-              { title: "ハロウィン", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_horror/%E3%83%8F%E3%83%AD%E3%82%A6%E3%82%A3%E3%83%B3.mp3" },
-              { title: "ホラー1", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_horror/%E3%83%9B%E3%83%A9%E3%83%BC1.mp3" },
-              { title: "ホラー2", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_horror/%E3%83%9B%E3%83%A9%E3%83%BC2.mp3" },
-              { title: "ホラー3", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_horror/%E3%83%BC3.mp3" },
-              { title: "ホラー4", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_horror/%E3%83%BC4.mp3" },
-              { title: "ほん怖", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_horror/%E1%1%BB%E3%82%93%E6%80%96.mp3" },
-              { title: "マリオ", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_horror/%E3%83%9E%E3%83%AA%E3%82%AA.mp3" },
-              { title: "青鬼", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_horror/%E9%9D%92%E9%AC%BC.mp3" }
+              { title: "シオンタウン", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E3%82%B7%E3%82%AA%E3%83%B3%E3%82%BF%E3%82%A6%E3%83%B3.mp3" },
+              { title: "シャトルラン", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E3%82%B7%E3%83%A3%E3%83%88%E3%83%AB%E3%83%A9%E3%83%B3.mp3" },
+              { title: "ハロウィン", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E3%83%8F%E3%83%AD%E3%82%A6%E3%82%A3%E3%83%B3.mp3" },
+              { title: "ホラー1", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E3%83%9B%E3%83%A9%E3%83%BC1.mp3" },
+              { title: "ホラー2", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E3%83%9B%E3%83%A9%E3%83%BC2.mp3" },
+              { title: "ホラー3", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E3%83%9B%E3%83%A9%E3%83%BC3.mp3" },
+              { title: "ホラー4", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E3%83%9B%E3%83%A9%E3%83%BC4.mp3" },
+              { title: "ほん怖", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E3%81%BB%E3%82%93%E6%80%96.mp3" },
+              { title: "マリオ", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E3%83%9E%E3%83%AA%E3%82%AA.mp3" },
+              { title: "青鬼", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E9%9D%92%E9%AC%BC.mp3" }
           ],
           bgm_uma_shika: [
-              { title: "馬と鹿1", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_uma_shika/%E9%A6%AC%E3%81%A8%E9%B9%BF1.mp3" },
-              { title: "馬と鹿2", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_uma_shika/%E9%A6%AC%E3%81%A8%E9%B9%BF2.mp3" },
-              { title: "馬と鹿3", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_uma_shika/%E9%A6%AC%E3%81%A8%E9%B9%BF3.mp3" },
-              { title: "馬と鹿4", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_uma_shika/%E9%A6%AC%E3%81%A8%E9%B9%BF4.mp3" },
-              { title: "馬と鹿5", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_uma_shika/%E9%A6%AC%E3%81%A8%E9%B9%BF5.mp3" },
-              { title: "馬と鹿6", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_uma_shika/%E9%A6%AC%E3%81%A8%E9%B9%BF6.mp3" },
-              { title: "馬と鹿7", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_uma_shika/%E9%A6%AC%E3%81%A8%E9%B9%BF7.mp3" },
-              { title: "馬と鹿8", url: "https://raw.githubusercontent.com/2490553h-dot/monico/main/bgm_uma_shika/%E9%A6%AC%E3%81%A8%E9%B9%BF8.mp3" }
+              { title: "馬と鹿1", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E9%A6%AC%E3%81%A8%E9%B9%BF1.mp3" },
+              { title: "馬と鹿2", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E9%A6%AC%E3%81%A8%E9%B9%BF2.mp3" },
+              { title: "馬と鹿3", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E9%A6%AC%E3%81%A8%E9%B9%BF3.mp3" },
+              { title: "馬と鹿4", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E9%A6%AC%E3%81%A8%E9%B9%BF4.mp3" },
+              { title: "馬と鹿5", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E9%A6%AC%E3%81%A8%E9%B9%BF5.mp3" },
+              { title: "馬と鹿6", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E9%A6%AC%E3%81%A8%E9%B9%BF6.mp3" },
+              { title: "馬と鹿7", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E9%A6%AC%E3%81%A8%E9%B9%BF7.mp3" },
+              { title: "馬と鹿8", url: "https://raw.githubusercontent.com/2490553h-dot/monico_bgm_new/main/bgm_horror/%E9%A6%AC%E3%81%A8%E9%B9%BF8.mp3" }
           ]
       };
+
       // 起動アニメーション
       window.onload = () => {
          const loader = document.getElementById("loading-screen");
@@ -454,7 +455,7 @@
       let previewAudio = null;
       let isBgmPlaying = false;
 
-      // 【追加】「馬と鹿」の次回再生インデックスを保持する変数
+      // 「馬と鹿」の次回再生インデックスを保持する変数
       let umaShikaIndex = 0;
 
       // 基準の自動追従レート
@@ -852,7 +853,7 @@
                   const reasonText = reasons.length > 0 ? reasons.join("、") : "集中力の低下";
                   status.textContent = `⚠️ 集中低下検知 (${reasonText}): BGMを再生します。`;
                   
-                  // BGMを再生 (変更：15秒タイマーではなく、曲の最後まで再生)
+                  // BGMを再生
                   playAlertBGM();
                   
                   lapseScore = 0; 
